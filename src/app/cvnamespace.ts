@@ -22,6 +22,7 @@ interface CvMatConstructor {
 }
 
 interface CvMatVector {
+  push_back(mat: CvMat): unknown;
   new (): CvMatVector;
   size(): number;
   get(index: number): CvMat;
@@ -64,6 +65,7 @@ interface CvNamespace {
   readonly CV_8U: number;
   readonly CV_8UC1: number;
   readonly CV_8UC3: number;
+  readonly CV_8UC4: number;
   readonly CV_8SC2: number;
   readonly CV_16UC1: number;
   readonly CV_32F: number;
@@ -82,7 +84,7 @@ interface CvNamespace {
   readonly LINE_4: number;
 
   imread(source: string | HTMLImageElement | HTMLCanvasElement): CvMat;
-  imshow(destination: HTMLCanvasElement, image: CvMat): void;
+  imshow(destination: string | HTMLImageElement | HTMLCanvasElement, image: CvMat): void;
   resize(
     source: CvMat,
     destination: CvMat,

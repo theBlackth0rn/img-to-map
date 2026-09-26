@@ -1,0 +1,25 @@
+<base-editor-component
+  (editorKeydown)="handleKeydown($event)"
+  (canvasClick)="handleCanvasClick($event)"
+  headingText="Select Contours"
+  editorId="editor2"
+  (editorExpanded)="emitEditorExpanded()"
+>
+  <slider
+    id="minContourAreaSlider"
+    [min]="0"
+    [max]="5000"
+    [value]="minContourArea"
+    (valueChange)="changePropertyAction('minContourArea', $event)"
+    >Minimum Contour Area
+  </slider>
+  <button (click)="deleteSelectedContours()">
+    <img class="icon" src="icons/bin.svg" />
+    Delete Selected
+  </button>
+  <br />
+  <button (click)="keepSelectedOnly()">
+    <img class="icon" src="icons/checkmark.svg" />
+    Keep Selection Only
+  </button>
+</base-editor-component>

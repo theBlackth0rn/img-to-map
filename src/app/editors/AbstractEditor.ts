@@ -15,7 +15,7 @@ export abstract class AbstractEditor {
 
   public abstract resetPropertiesToDefault(): void;
 
-  public overrideDisplayImage(image: CvMat) {
+  public overrideDisplayImageWith(image: CvMat) {
     this.setDisplayImageWithoutUpdate(image);
     this.updateDisplayImage();
   }

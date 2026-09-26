@@ -4,7 +4,7 @@ import { Slider } from '../../slider/slider';
 import { BaseEditorComponent } from '../base-editor-component/base-editor-component';
 import { NgTemplateOutlet } from '@angular/common';
 import { AbstractEditor } from '../AbstractEditor.js';
-import { CvUtils } from '../../common/CvUtils';
+import { convertMatToGrayscale } from '../../common/CvUtils';
 import { GrayscaleImage } from '../../common/image/GrayscaleImage';
 
 @Component({
@@ -58,14 +58,14 @@ export class Editor1 extends AbstractEditor {
       outputImageBinary.erode(this.erosionIters);
       outputImageBinary.dilate(this.dilationIters);
     }
-    this.overrideDisplayImage(outputImageBinary.getMat());
+    this.overrideDisplayImageWith(outputImageBinary.getMat());
   }
 
   override onNewInputImage(): void {
     if (this.grayScaleInputImage) {
       this.grayScaleInputImage.delete();
     }
-    this.grayScaleInputImage = CvUtils.convertMatToGrayscale(this.getInputImage());
+    this.grayScaleInputImage = convertMatToGrayscale(this.getInputImage());
     this.inputImageGrayscale = GrayscaleImage.fromMat(this.getInputImage());
   }
 

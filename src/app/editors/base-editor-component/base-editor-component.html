@@ -25,8 +25,8 @@
   <div class="editor row collapse" id="{{ editorId }}">
     <div class="left col-lg-6 col-12">
       <div
-        class="canvas-container {{ editorId === 'editor2' ? 'clickable' : '' }}"
-        #canvasContainer
+        class="editor-display-frame {{ editorId === 'editor2' ? 'clickable' : '' }}"
+        #editorDisplayFrame
       >
         <div class="canvas-loading-background" [hidden]="!isCanvasLoading"></div>
         <div
@@ -36,13 +36,15 @@
         >
           <span class="visually-hidden">Loading...</span>
         </div>
-        <canvas
-          id="{{ editorId }}-canvas"
-          tabindex="0"
-          #editorCanvas
-          (click)="handleCanvasClick($event)"
-        >
-        </canvas>
+        <div class="layered-canvas-frame" #layeredCanvasFrame>
+          <canvas
+            id="{{ editorId }}-canvas"
+            tabindex="0"
+            #editorCanvas
+            (click)="handleCanvasClick($event)"
+          >
+          </canvas>
+        </div>
         <button class="reset-button" (click)="resetGlobalTransform()">
           <img class="icon" src="icons/reset.svg" alt="" />
           Reset

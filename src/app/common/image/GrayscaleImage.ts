@@ -1,16 +1,15 @@
-import { CvUtils } from '../CvUtils';
+import { convertMatToGrayscale } from '../CvUtils';
+import { AbstractImage } from './AbstractImage';
 import { BinaryImage } from './BinaryImage';
 
-export class GrayscaleImage {
-  private mat: CvMat;
-
+export class GrayscaleImage extends AbstractImage {
   constructor(width: number, height: number) {
-    this.mat = new cv.Mat(height, width, cv.CV_8UC1);
+    super(new cv.Mat(height, width, cv.CV_8UC1));
   }
 
   static fromMat(mat: CvMat): GrayscaleImage {
     const output = new GrayscaleImage(mat.cols, mat.rows);
-    output.mat = CvUtils.convertMatToGrayscale(mat);
+    output.mat = convertMatToGrayscale(mat);
 
     return output;
   }
@@ -29,6 +28,12 @@ export class GrayscaleImage {
       constantAddedToEachPixel,
     );
 
-    return BinaryImage.fromMat(output);
+    return BinaryImage.fromBinaryMat(output);
+  }
+
+  public toBinaryImage(thresholdValue: number): BinaryImage {
+    const binaryOutput = new cv.Mat(this.mat.rows, this.mat.cols, cv.CV_8UC1);
+    cv.threshold(this.mat, binaryOutput, thresholdValue, 255, cv.THRESH_BINARY);
+    return BinaryImage.fromBinaryMat(binaryOutput);
   }
 }

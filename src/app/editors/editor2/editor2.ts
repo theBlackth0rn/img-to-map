@@ -4,7 +4,7 @@ import { AbstractEditor } from '../AbstractEditor';
 import { Colors } from '../../common/Colors';
 import { ReversibleAction } from '../../common/reversible-action/ReversibleAction';
 import { Slider } from '../../slider/slider';
-import { CvUtils } from '../../common/CvUtils';
+import { findContours } from '../../common/CvUtils';
 
 @Component({
   selector: 'editor2',
@@ -123,7 +123,7 @@ export class Editor2 extends AbstractEditor {
   private createContourImage(): void {
     this.selectedContours.clear();
 
-    this.contours = CvUtils.findContours(this.getInputImage());
+    this.contours = findContours(this.getInputImage());
     this.isContourDeletedAt = Array(this.contours.size()).fill(false);
 
     this.setDisplayImageWithoutUpdate(

@@ -6,7 +6,7 @@ import { ImageStyleEnum } from './image-styles/ImageStyleEnum';
 import { ReversibleAction } from '../../common/reversible-action/ReversibleAction';
 import { ImageStyleManager } from './image-styles/ImageStyleManager';
 import { ImageStyle } from './image-styles/ImageStyle';
-import { CvUtils } from '../../common/CvUtils';
+import { findContours, convertToFloat } from '../../common/CvUtils';
 
 @Component({
   selector: 'image-downloader',
@@ -42,7 +42,7 @@ export class ImageDownloader extends AbstractEditor {
 
   private applyStyleChanges() {
     if (!this.getInputImage()) return;
-    this.overrideDisplayImage(this.styleManager.apply());
+    this.overrideDisplayImageWith(this.styleManager.apply());
   }
   protected resetRandomSeeds() {
     let oldSeed = ImageStyle.getSeed();
@@ -52,13 +52,13 @@ export class ImageDownloader extends AbstractEditor {
       apply: (dataStorage: { old: number; new: number }) => {
         this.baseEditor.setIsCanvasLoading(true);
         window.setTimeout(() => {
-          this.overrideDisplayImage(this.styleManager.setSeedAndGetImage(dataStorage.new));
+          this.overrideDisplayImageWith(this.styleManager.setSeedAndGetImage(dataStorage.new));
         }, 0);
       },
       reverse: (dataStorage: { old: number; new: number }) => {
         this.baseEditor.setIsCanvasLoading(true);
         window.setTimeout(() => {
-          this.overrideDisplayImage(this.styleManager.setSeedAndGetImage(dataStorage.old));
+          this.overrideDisplayImageWith(this.styleManager.setSeedAndGetImage(dataStorage.old));
         }, 0);
       },
     });
@@ -94,7 +94,7 @@ export class ImageDownloader extends AbstractEditor {
   protected loadNoiseMat($event: Event) {
     const img = $event.target as HTMLImageElement;
     const mat = cv.imread(img);
-    const floatMat = CvUtils.convertToFloat(mat);
+    const floatMat = convertToFloat(mat);
 
     if (img.id === 'bigger') {
       ImageStyle.setBiggerNoiseMat(floatMat);

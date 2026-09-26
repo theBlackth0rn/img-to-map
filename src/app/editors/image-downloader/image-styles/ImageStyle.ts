@@ -1,5 +1,5 @@
 import Perlin from '../../../../noise/perlin';
-import { CvUtils } from '../../../common/CvUtils';
+import { findContours } from '../../../common/CvUtils';
 
 export abstract class ImageStyle {
   static seed = 0.6452150732801007;
@@ -63,7 +63,7 @@ export abstract class ImageStyle {
 
   protected static findContours(): void {
     if (this.contours) this.contours.delete();
-    this.contours = CvUtils.findContours(this.lastInputImage);
+    this.contours = findContours(this.lastInputImage);
   }
 
   private static getBiggerNoiseAt(x: number, y: number): number {

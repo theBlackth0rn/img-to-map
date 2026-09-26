@@ -26,8 +26,8 @@ export class BaseEditorComponent {
 
   @ViewChild('editorCanvas')
   public canvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('canvasContainer')
-  private canvasContainerRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('layeredCanvasFrame')
+  private layeredCanvasFrameRef!: ElementRef<HTMLDivElement>;
   @ViewChild('collapseToggle')
   private collapseToggleRef!: ElementRef<HTMLAnchorElement>;
 
@@ -48,6 +48,12 @@ export class BaseEditorComponent {
   public isCollapsed: boolean = true;
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
+
+  public addCanvasLayer(): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    this.layeredCanvasFrameRef.nativeElement.appendChild(canvas);
+    return canvas;
+  }
 
   public setDisplayImage(image: CvMat) {
     if (!image) return;
@@ -81,13 +87,13 @@ export class BaseEditorComponent {
     if (!this.panzoomInstance) return;
     if (event.key === 'Alt') {
       this.panzoomInstance.resume();
-      this.canvasContainerRef.nativeElement.classList.add('movable');
-      this.canvasContainerRef.nativeElement.classList.remove('clickable');
+      this.layeredCanvasFrameRef.nativeElement.classList.add('movable');
+      this.layeredCanvasFrameRef.nativeElement.classList.remove('clickable');
     } else if (event.key === 'r') {
       this.resetGlobalTransform();
     } else if (this.panzoomInstance.isPaused()) {
       if (this.editorId === 'editor2') {
-        this.canvasContainerRef.nativeElement.classList.add('clickable');
+        this.layeredCanvasFrameRef.nativeElement.classList.add('clickable');
       }
       this.editorKeydown.emit(event);
     }
@@ -97,9 +103,9 @@ export class BaseEditorComponent {
     if (!this.panzoomInstance) return;
     if (event.key === 'Alt') {
       this.panzoomInstance.pause();
-      this.canvasContainerRef.nativeElement.classList.remove('movable');
+      this.layeredCanvasFrameRef.nativeElement.classList.remove('movable');
       if (this.editorId === 'editor2') {
-        this.canvasContainerRef.nativeElement.classList.add('clickable');
+        this.layeredCanvasFrameRef.nativeElement.classList.add('clickable');
       }
     }
   }
@@ -115,7 +121,7 @@ export class BaseEditorComponent {
     if (!this.isCollapsed) {
       BaseEditorComponent.setGlobalPanzoomTransform(BaseEditorComponent.globalTransform);
       this.editorExpanded.emit();
-      this.canvasContainerRef.nativeElement.scrollIntoView({
+      this.layeredCanvasFrameRef.nativeElement.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
       });
@@ -139,7 +145,7 @@ export class BaseEditorComponent {
       minZoom: 0.8,
       bounds: true,
     };
-    this.panzoomInstance = panzoom(this.canvasRef.nativeElement, panzoomOptions);
+    this.panzoomInstance = panzoom(this.layeredCanvasFrameRef.nativeElement, panzoomOptions);
     this.panzoomInstance.pause();
     this.panzoomInstance.zoomAbs(0, 0, BaseEditorComponent.globalTransform.scale);
     this.panzoomInstance.moveTo(
