@@ -4,9 +4,9 @@ import { convertMatToBinary } from '../CvUtils';
 import { AbstractImage } from './AbstractImage';
 import { GrayscaleImage } from './GrayscaleImage';
 
-export class BinaryImage extends GrayscaleImage {
+export class BinaryImage extends AbstractImage {
   constructor(width: number, height: number) {
-    super(width, height);
+    super(cv.Mat.zeros(height, width, cv.CV_8UC1));
   }
 
   static fromBinaryMat(mat: CvMat): BinaryImage {
@@ -15,7 +15,7 @@ export class BinaryImage extends GrayscaleImage {
     return output;
   }
 
-  static override fromMat(output: CvMat): BinaryImage {
+  static fromMat(output: CvMat): BinaryImage {
     const binaryMat = convertMatToBinary(output);
     return BinaryImage.fromBinaryMat(binaryMat);
   }

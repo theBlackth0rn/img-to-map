@@ -1,8 +1,8 @@
 <base-editor-component
   (editorKeydown)="handleKeydown($event)"
-  (canvasClick)="handleCanvasClick($event)"
+  (canvasClick)="selector.handleCanvasClick($event)"
   headingText="Select Contours"
-  editorId="editor2"
+  editorId="editor2-new"
   (editorExpanded)="emitEditorExpanded()"
 >
   <slider
@@ -13,12 +13,12 @@
     (valueChange)="changePropertyAction('minContourArea', $event)"
     >Minimum Contour Area
   </slider>
-  <button (click)="deleteSelectedContours()">
+  <button (click)="deleteSelection()">
     <img class="icon" src="icons/bin.svg" />
     Delete Selected
   </button>
   <br />
-  <button (click)="keepSelectedOnly()">
+  <button (click)="keepSelectionOnly()">
     <img class="icon" src="icons/checkmark.svg" />
     Keep Selection Only
   </button>

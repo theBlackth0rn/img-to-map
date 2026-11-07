@@ -36,6 +36,6 @@ export class Editor3 extends AbstractEditor {
   }
 
   private smoothenCoastlinesOf(inputImageBinary: BinaryImage): BinaryImage {
-    return inputImageBinary.blur(this.coastlineSmoothness).toBinaryImage(200);
+    return inputImageBinary.blur(this.coastlineSmoothness + 1).toBinaryImage(200);
   }
 }

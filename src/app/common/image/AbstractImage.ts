@@ -21,6 +21,9 @@ export abstract class AbstractImage {
       matVector.push_back(contour.mat);
     }
 
+    console.log("AbstractImage.drawContours: matVector created with contours");
+    console.log(this.mat);
+
     let drawAll = -1;
     cv.drawContours(this.mat, matVector, drawAll, color, thickness);
 

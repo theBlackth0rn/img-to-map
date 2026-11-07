@@ -9,10 +9,11 @@ import { AbstractEditor } from '../editors/AbstractEditor.js';
 import { ReversibleAction } from '../common/reversible-action/ReversibleAction';
 import { BaseEditorComponent } from '../editors/base-editor-component/base-editor-component';
 import { UploadedImageDto } from '../dto/UploadedImageDto';
+import { Editor2New } from '../editors/editor2-new/editor2-new';
 
 @Component({
   selector: 'project',
-  imports: [CommonModule, ImageUploader, Editor1, Editor2, Editor3, ImageDownloader],
+  imports: [CommonModule, ImageUploader, Editor1, Editor2, Editor3, ImageDownloader, Editor2New],
   templateUrl: './project.html',
   styleUrls: ['./project.css'],
 })
@@ -25,6 +26,7 @@ export class Project {
   @ViewChild(ImageUploader) imageUploader!: ImageUploader;
   @ViewChild(Editor1) editor1!: Editor1;
   @ViewChild(Editor2) editor2!: Editor2;
+  @ViewChild(Editor2New) editor2New!: Editor2New;
   @ViewChild(Editor3) editor3!: Editor3;
   @ViewChild(ImageDownloader) imageDownloader!: ImageDownloader;
 
@@ -82,6 +84,9 @@ export class Project {
     if (this.isAnyEditorExpandedAfter(editorIndex)) {
       const currentEditor = this.getEditors()[editorIndex];
       const nextEditor = this.getEditors()[editorIndex + 1];
+      console.log('current editor:', currentEditor);
+      console.log('next editor:', nextEditor);
+      console.log('current editor display image:', currentEditor.getDisplayImage());
       nextEditor.setInputImage(currentEditor.getDisplayImage().clone());
     }
   }
@@ -119,6 +124,6 @@ export class Project {
   }
 
   private getEditors(): AbstractEditor[] {
-    return [this.editor1, this.editor2, this.editor3, this.imageDownloader];
+    return [this.editor1, this.editor2New, this.editor3, this.imageDownloader];
   }
 }

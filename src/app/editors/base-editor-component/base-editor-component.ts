@@ -27,7 +27,7 @@ export class BaseEditorComponent {
   @ViewChild('editorCanvas')
   public canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('layeredCanvasFrame')
-  private layeredCanvasFrameRef!: ElementRef<HTMLDivElement>;
+  public layeredCanvasFrameRef!: ElementRef<HTMLDivElement>;
   @ViewChild('collapseToggle')
   private collapseToggleRef!: ElementRef<HTMLAnchorElement>;
 

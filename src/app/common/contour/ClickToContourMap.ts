@@ -2,13 +2,15 @@
  * <<licensetext>>
  */
 
+import { convertToCvMatVector } from '../CvUtils';
 import { Contour } from './Contour';
-import { ContoursSortedByArea } from './ContoursSortedByArea';
 
 export class ClickToContourMap {
+  private numberOfContours: number = 0;
   private clickToContourMap: CvMat;
   private readonly contours: Array<Contour>;
   public clickRange: number = 9;
+  private readonly MAX_16BIT_UINT_VALUE: number = 65535;
 
   constructor(contours: Array<Contour>, width: number, height: number) {
     this.contours = contours;
@@ -17,14 +19,45 @@ export class ClickToContourMap {
   }
 
   private initClickToContourMap(): void {
-    
+    const contoursMatVector = convertToCvMatVector(this.contours);
     for (let i = 0; i < this.contours.length; i++) {
-      cv.drawContours(this.clickToContourMap, this.contours, i, new cv.Scalar(i + 1), cv.FILLED);
+      cv.drawContours(
+        this.clickToContourMap,
+        contoursMatVector,
+        i,
+        new cv.Scalar(i + 1),
+        cv.FILLED,
+      );
     }
+    contoursMatVector.delete();
   }
 
   public registerContours(contours: Array<Contour>): void {
-    //TODO: implement
+    const contoursMatVector = convertToCvMatVector(contours);
+    for (let i = 0; i < contours.length; i++) {
+      let nextContourIndex = this.numberOfContours + i + 1;
+      if (nextContourIndex > this.MAX_16BIT_UINT_VALUE) {
+        this.numberOfContours = this.MAX_16BIT_UINT_VALUE;
+        contoursMatVector.delete();
+        throw new Error('Exceeded maximum number of contours for 16-bit ClickToContourMap');
+      }
+    }
+    this.numberOfContours += contours.length;
+
+    contours.forEach((contour, index) => {
+      if (this.numberOfContours < this.MAX_16BIT_UINT_VALUE) {
+        this.numberOfContours++;
+        cv.drawContours(
+          this.clickToContourMap,
+          contoursMatVector,
+          index,
+          new cv.Scalar(this.numberOfContours),
+          cv.FILLED,
+        );
+      }
+    });
+
+    contoursMatVector.delete();
   }
 
   public findContourAt(x: number, y: number): Contour | undefined {

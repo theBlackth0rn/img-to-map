@@ -6,106 +6,109 @@ import { AbstractEditor } from '../AbstractEditor';
 import { findContours } from '../../common/CvUtils';
 import { BinaryImage } from '../../common/image/BinaryImage';
 import { Colors } from '../../common/Colors';
+import { ContourSelector } from '../../common/contour/ContourSelector';
+import { AreaBasedContourDrawer as ContourDrawer } from '../../common/contour/AreaBasedContourDrawer';
+import { ReversibleAction } from '../../common/reversible-action/ReversibleAction';
 
 @Component({
-  selector: 'app-editor2-new',
+  selector: 'editor2-new',
   imports: [BaseEditorComponent, Slider],
   templateUrl: './editor2-new.html',
   styleUrl: './editor2-new.css',
 })
 export class Editor2New extends AbstractEditor {
   public minContourArea: number = 1500;
-  private biggestIndexDrawn: number = -1;
 
   private contours: Contour[] = [];
-  private sortByAreaDecreasing = (a: Contour, b: Contour) => b.area - a.area;
-  private contourImage!: BinaryImage;
 
   @ViewChild(BaseEditorComponent)
   private baseEditorComponent!: BaseEditorComponent;
 
-  public override resetPropertiesToDefault(): void {
+  selector!: ContourSelector;
+  drawer!: ContourDrawer;
+  selectorCanvas!: HTMLCanvasElement;
+
+  override resetPropertiesToDefault(): void {
     this.minContourArea = 1500;
   }
 
-  // only runs on new input images
-  protected override processImage(): void {
-    this.findAndSortContours();
-    this.drawContoursAboveMinArea();
-
-    this.overrideDisplayImageWith(this.contourImage.getMat());
-  }
-
-  protected override handlePropertyChanged(): void {
-    let biggestIndexToDraw = this.binarySearchForFirstIndexUnder(this.minContourArea);
-
-    if (biggestIndexToDraw > this.biggestIndexDrawn) {
-      this.drawContoursBetween(this.biggestIndexDrawn + 1, biggestIndexToDraw, Colors.WHITE);
-    } else {
-      let isFasterToRedrawAll = biggestIndexToDraw < this.biggestIndexDrawn - biggestIndexToDraw;
-      if (isFasterToRedrawAll) {
-        this.drawContoursAboveMinArea();
-      } else {
-        this.drawContoursBetween(biggestIndexToDraw, this.biggestIndexDrawn + 1, Colors.BLACK);
-      }
+  override onNewInputImage(): void {
+    if (this.baseEditorComponent.layeredCanvasFrameRef.nativeElement.childNodes.length < 2) {
+      this.selectorCanvas = this.baseEditorComponent.addCanvasLayer();
     }
-    this.biggestIndexDrawn = biggestIndexToDraw - 1;
-    this.overrideDisplayImageWith(this.contourImage.getMat());
+
+    this.initializeContourDrawer();
+    this.initializeContourSelector();
   }
 
-  private findAndSortContours(): void {
-    const contoursMatVector = findContours(this.getInputImage());
-    this.contours = this.createContourArrayFrom(contoursMatVector);
-    this.contours.sort(this.sortByAreaDecreasing);
+  override processImage(): void {
+    this.drawer.drawContoursAbove(this.minContourArea);
+    this.overrideDisplayImageWith(this.drawer.image.getMat().clone());
   }
 
-  private drawContoursAboveMinArea(): void {
-    let lastIndex = this.binarySearchForFirstIndexUnder(this.minContourArea);
-    let contoursAbove = this.contours.slice(0, lastIndex);
-
-    this.contourImage.drawContours(contoursAbove, Colors.WHITE);
-    this.biggestIndexDrawn = lastIndex - 1;
-  }
-
-  private createContourArrayFrom(contours: CvMatVector): Array<Contour> {
-    let outputContours = [];
-    for (let i = 0; i < contours.size(); i++) {
-      const contour = new Contour(contours.get(i));
-      if (contour.area >= this.minContourArea) {
-        outputContours.push(contour);
-      }
+  handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Delete') {
+      this.deleteSelection();
     }
-    return outputContours;
-  }
-
-  private binarySearchForFirstIndexUnder(area: number): number {
-    let isUnderArea = (index: number) => this.contours[index].area < area;
-
-    let low = 0;
-    let high = this.contours.length - 1;
-
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-
-      if (isUnderArea(mid) && (mid === 0 || !isUnderArea(mid - 1))) {
-        return mid; // Target found
-      } else if (!isUnderArea(mid)) {
-        low = mid + 1; // Discard the left half
-      } else {
-        high = mid - 1; // Discard the right half
-      }
+    if (event.key === 'Escape') {
+      this.selector.clearSelection();
     }
-    return -1; // Target not found
+    if (event.key === 'Enter') {
+      this.keepSelectionOnly();
+    }
+  }
+  keepSelectionOnly(): ReversibleAction<void> {
+    const selection = new Set(this.selector.selection);
+    const inverseSelection = new Set(this.contours.filter((contour) => !selection.has(contour)));
+    return ReversibleAction.of({
+      apply: () => {
+        inverseSelection.forEach((contour) => (contour.isDeleted = true));
+        this.selector.clearSelection();
+        this.drawer.eraseContours(inverseSelection);
+      },
+      reverse: () => {
+        inverseSelection.forEach((contour) => (contour.isDeleted = false));
+        this.selector.forceSelection(selection);
+        this.drawer.drawContours(inverseSelection);
+      },
+    });
+  }
+  deleteSelection(): ReversibleAction<void> {
+    const selection = new Set(this.selector.selection);
+    return ReversibleAction.of({
+      apply: () => {
+        selection.forEach((contour) => (contour.isDeleted = true));
+        this.selector.clearSelection();
+        this.drawer.eraseContours(selection);
+      },
+      reverse: () => {
+        selection.forEach((contour) => (contour.isDeleted = false));
+        this.selector.forceSelection(selection);
+        this.drawer.drawContours(selection);
+      },
+    });
   }
 
-  private drawContoursBetween(
-    startIndex: number,
-    endIndex: number,
-    color: number[] | CvScalar,
-  ): void {
-    this.contourImage.drawContours(
-      this.contours.slice(startIndex, endIndex).filter((contour) => !contour.isDeleted),
-      color,
+  private initializeContourDrawer(): void {
+    if (this.drawer) {
+      this.drawer.delete();
+    }
+    this.drawer = new ContourDrawer(
+      this.baseEditorComponent.canvasRef.nativeElement,
+      BinaryImage.fromBinaryMat(this.getInputImage()),
+    );
+    this.contours = this.drawer.contours;
+  }
+
+  private initializeContourSelector(): void {
+    if (this.selector) {
+      this.selector.delete();
+    }
+    this.selector = new ContourSelector(
+      this.selectorCanvas,
+      this.getInputImage().cols,
+      this.getInputImage().rows,
+      this.contours,
     );
   }
 }

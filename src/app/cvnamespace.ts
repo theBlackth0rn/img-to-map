@@ -3,6 +3,7 @@ interface CvMat {
   readonly cols: number;
   readonly data16U: Uint16Array;
   ucharPtr(row: number, column: number): Uint8Array;
+  ushortPtr(y: number, x: number): Uint16Array;
   floatPtr(row: number, column: number): Float32Array;
   clone(): CvMat;
   roi(rectangle: object): CvMat;
@@ -107,7 +108,17 @@ interface CvNamespace {
   dilate(...args: unknown[]): void;
   erode(...args: unknown[]): void;
   findContours(...args: unknown[]): void;
-  drawContours(...args: unknown[]): void;
+  drawContours(
+    destination: CvMat,
+    contours: CvMatVector | Array<CvMat>,
+    contourIdx: number,
+    color: CvScalar | number[],
+    thickness?: number,
+    lineType?: number,
+    hierarchy?: CvMat,
+    maxLevel?: number,
+    offset?: CvPointConstructor,
+  ): void;
   addWeighted(...args: unknown[]): void;
   inRange(...args: unknown[]): void;
   contourArea(contour: CvMat): number;

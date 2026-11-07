@@ -6,7 +6,6 @@ import { Contour } from './Contour';
 
 export class ContourSelector {
   private canvas: HTMLCanvasElement;
-  private readonly contours: Array<Contour>;
   private clickToContourMap: ClickToContourMap; // Replace 'any' with the actual type of clickToContourMap
   public selection: Set<Contour>;
   private selectionImage: RgbaImage;
@@ -14,11 +13,9 @@ export class ContourSelector {
 
   constructor(canvas: HTMLCanvasElement, width: number, height: number, contours: Array<Contour>) {
     this.canvas = canvas;
-    this.contours = contours;
     this.selection = new Set<Contour>();
     this.selectionImage = RgbaImage.newTransparent(width, height);
     this.clickToContourMap = new ClickToContourMap(contours, width, height);
-
   }
 
   public handleCanvasClick(event: PointerEvent) {
@@ -32,13 +29,13 @@ export class ContourSelector {
     }
   }
 
-  public dropSelection(): void {
+  public clearSelection(): void {
     this.selectionImage.drawContours(this.selection, Colors.TRANSPARENT);
     this.selection.clear();
   } 
 
   public forceSelection(newSelection: Set<Contour>): void {
-    this.dropSelection();
+    this.clearSelection();
     this.select(newSelection);
   }
 
@@ -64,7 +61,7 @@ export class ContourSelector {
   
   private updateSelectionWith(clickedContour: Contour, isKeepSelection: boolean) {
     if (!isKeepSelection) {
-         this.dropSelection();
+         this.clearSelection();
     }    
     if (this.selection.has(clickedContour)) {
         this.unselect([clickedContour]);

@@ -5,7 +5,7 @@ import { convertToContourArray } from '../CvUtils';
 
 export class AreaBasedContourDrawer {
   public readonly contours: Array<Contour>;
-  private image: BinaryImage;
+  public image: BinaryImage;
   private readonly canvas: HTMLCanvasElement;
 
   private readonly sortByAreaDesc = (a: Contour, b: Contour) => b.area - a.area;
@@ -20,14 +20,27 @@ export class AreaBasedContourDrawer {
     this.biggestIndexDrawn = -1; // TODO: potential bugs introduced by this starting value
   }
 
-  public drawContoursAbove(area: number): void {
+  drawContoursAbove(area: number): void {
     let biggestIndexToDraw = this.binarySearchForFirstIndexUnder(area);
 
     this.optimizeDrawingUpTo(biggestIndexToDraw);
     this.image.showOn(this.canvas);
   }
 
-  public delete(): void {
+  drawContours(selection: Set<Contour>) {
+    this.image.drawContours(
+      Array.from(selection).filter((contour) => !contour.isDeleted),
+      Colors.WHITE,
+    );
+  }
+  eraseContours(selection: Set<Contour>) {
+    this.image.drawContours(
+      Array.from(selection).filter((contour) => !contour.isDeleted),
+      Colors.BLACK,
+    );
+  }
+
+  delete(): void {
     if (this.contoursMatVector) {
       this.contoursMatVector.delete();
     }
